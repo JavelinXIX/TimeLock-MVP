@@ -1,5 +1,7 @@
 # TimeLock MVP
 
+[GitHub Actions](https://github.com/JavelinXIX/TimeLock-MVP/actions/workflows/android.yml) / [GitHub上の検証結果](VERIFICATION.md#github-actionsでの検証)
+
 Kotlin + Jetpack ComposeによるAndroidのアプリ利用時間制限。Galaxy Z Fold7 / Android 17を利用想定とし、minSdk 30 / compileSdk・targetSdk 37でビルドします。Android 17専用APIは使いません。AGP 8.13.2の公式検証上限はAPI 36.1のため、API 37.0でのビルド時に互換性の警告が出ます。**Galaxy Z Fold7 / Android 17実機では未検証**です。
 
 ## 仕様

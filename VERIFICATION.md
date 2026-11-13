@@ -1,4 +1,4 @@
-# 検証結果（2026-11-13 UTC）
+# ローカル検証結果（2026-11-13 UTC、GitHub登録前）
 
 - Temurin JDK 21 / Gradle 8.13 / AGP 8.13.2 / Android SDK 37.0。
 - `testDebugUnitTest lintDebug assembleDebug assembleRelease`: BUILD SUCCESSFUL。
@@ -11,3 +11,14 @@
 - GitHubリポジトリ未指定のため、GitHub Actions上の実行・Artifacts保存は未検証。workflowと署名Secretsの手順を同梱。
 
 詳細な最終ビルドログは `verification/build.log` を参照してください。
+
+## GitHub Actionsでの検証
+
+- リポジトリ: https://github.com/JavelinXIX/TimeLock-MVP
+- 実行: https://github.com/JavelinXIX/TimeLock-MVP/actions/runs/43428937777
+- 対象コミット: `00f8f53f87957607f5a7ccd6bb065b25f68a09a5`
+- `Verify and build preview`（単体テスト・Lint・assembleDebug）: 成功。
+- `preview-apk-2`のArtifactsアップロード: 成功。ZIPを展開して`app-debug.apk`をインストールできます。
+- `ANDROID_KEYSTORE_BASE64`が未登録（実行時に空）だったため、固定署名鍵の復元工程は失敗し、配布用リリースAPKは未生成です。署名Secretsを確認・登録して再実行してください。workflow全体の表示は失敗になります。
+- この接続にはActions Secrets一覧の参照権限がありません。秘密鍵・パスワードはチャットやソースに含めず、リポジトリ所有者が[Actions Secrets設定](https://github.com/JavelinXIX/TimeLock-MVP/settings/secrets/actions)から管理してください。
+- 初回実行で判明したSDKセットアップの廃止済み`tools`パッケージ参照は修正済みです。
