@@ -1,0 +1,1 @@
+<resources><string name="guard_description">利用時間上限に達したアプリからホームへ戻し、ブロック画面を表示します。画面の内容や入力は読み取りません。権限を無効にすると制限は停止します。</string></resources>
