@@ -14,6 +14,19 @@
 
 ## GitHub Actionsでの検証
 
+### Secrets登録後の配布用ビルド
+
+- 実行: https://github.com/JavelinXIX/TimeLock-MVP/actions/runs/43437833741
+- 対象コミット: `ce833aab4e22225379fbb5a19072864deb4ca396`
+- テスト・Lint・デバッグAPK生成・固定鍵でのリリースAPK署名・Artifacts保存を含め、workflow全体が成功。
+- 配布APK: [TimeLock-install-3](https://github.com/JavelinXIX/TimeLock-MVP/actions/runs/43437833741/artifacts/14044370967)。ZIPを展開し、`app-release.apk`をインストールしてください。
+- Artifactsから取得したAPKの`apksigner verify --verbose`が成功（v2署名）。versionCode 3、compileSdk/targetSdk 37を確認。
+- ZIPのSHA-256: `a1dfae490d0acdea7bd68055ebeb4e948cb97100a6234eeb488435d3839d9f4e`（GitHubのArtifact digestと一致）。
+- 今後も同じ署名鍵を維持してください。確認用debug APKから移行するときだけ、署名が異なるためアンインストールが必要です（設定も消えます）。
+- 実機の利用時間計測・ブロック動作は未検証です。
+
+### Secrets登録前の初回検証
+
 - リポジトリ: https://github.com/JavelinXIX/TimeLock-MVP
 - 実行: https://github.com/JavelinXIX/TimeLock-MVP/actions/runs/43428937777
 - 対象コミット: `00f8f53f87957607f5a7ccd6bb065b25f68a09a5`
