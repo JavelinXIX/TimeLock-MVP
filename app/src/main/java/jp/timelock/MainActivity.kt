@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
     var usage by remember { mutableStateOf(emptyMap<String,Long>()) }
     var allowed by remember { mutableStateOf(false) }
     var guardEnabled by remember { mutableStateOf(false) }
+    var guardHealth by remember { mutableStateOf("確認中") }
     var query by rememberSaveable { mutableStateOf("") }
     var filter by rememberSaveable { mutableStateOf(AppFilter.ALL) }
     val visibleApps = remember(apps, query, filter, today, plan) {
@@ -55,7 +56,13 @@ class MainActivity : ComponentActivity() {
     }
     var selected by remember { mutableStateOf<String?>(null) }
     var input by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) { while (true) { allowed = Usage.allowed(this@MainActivity); guardEnabled = getSystemService(android.view.accessibility.AccessibilityManager::class.java).getEnabledAccessibilityServiceList(android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_ALL_MASK).any { it.resolveInfo.serviceInfo.packageName == packageName }; today = rules.today(); if (allowed) usage = Usage.totals(this@MainActivity); delay(2000) } }
+    LaunchedEffect(Unit) { while (true) { allowed = Usage.allowed(this@MainActivity); guardEnabled = getSystemService(android.view.accessibility.AccessibilityManager::class.java).getEnabledAccessibilityServiceList(android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_ALL_MASK).any { it.resolveInfo.serviceInfo.packageName == packageName }; guardHealth = when {
+     !guardEnabled -> "無効（ユーザー補助を有効にしてください）"
+     !GuardStatus.isAlive(android.os.SystemClock.elapsedRealtime()) -> "応答なし（ユーザー補助を一度オフ→オン）"
+     !allowed -> "利用状況へのアクセスが必要"
+     GuardStatus.error -> "監視エラー（ユーザー補助を一度オフ→オン）"
+     else -> "動作中"
+    }; today = rules.today(); if (allowed) usage = Usage.totals(this@MainActivity); delay(2000) } }
     Surface(Modifier.fillMaxSize()) {
      LazyColumn(Modifier.safeDrawingPadding().widthIn(max = 840.dp).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
       item {
@@ -65,7 +72,7 @@ class MainActivity : ComponentActivity() {
        Text("上限は毎日0時に確定します。初回設定も明日から有効です。当日の変更・延長・解除はできません。")
        Text("計測: " + if (allowed) "許可済み" else "利用状況へのアクセスが必要")
        Button(onClick = { startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) }) { Text("利用状況へのアクセス設定") }
-       Text("ブロックサービス: " + if (guardEnabled) "有効" else "無効（ユーザー補助の許可が必要）")
+       Text("ブロック監視: $guardHealth")
        Button(onClick = { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }) { Text("TimeLockのユーザー補助を有効化") }
        Text("ユーザー補助で超過アプリからホームへ戻します。権限解除・削除で回避可能です。設定、ホーム、TimeLock自身は制限対象外です。")
        Spacer(Modifier.height(16.dp)); Text("アプリごとの上限", style = MaterialTheme.typography.titleLarge)
@@ -86,6 +93,7 @@ class MainActivity : ComponentActivity() {
            FilterChip(selected = filter == option, onClick = { filter = option }, label = { Text(option.label) })
           }
          }
+         Text("ブロック監視: $guardHealth", style = MaterialTheme.typography.bodySmall)
          Text("${visibleApps.size} / ${apps.size} 件", style = MaterialTheme.typography.bodySmall)
         }
        }
@@ -104,6 +112,9 @@ class MainActivity : ComponentActivity() {
         Column(Modifier.padding(16.dp)) {
          Text(app.label, style = MaterialTheme.typography.titleMedium)
          Text("今日: ${today[pkg]?.let { "$it 分" } ?: "制限なし"}  /  使用 ${((usage[pkg] ?: 0L) / 60000)} 分")
+         if (today[pkg]?.let { (usage[pkg] ?: 0L) >= it * 60000L } == true) {
+          Text("本日の上限に到達", color = MaterialTheme.colorScheme.error)
+         }
          Text("翌日以降: ${plan[pkg]?.let { "$it 分" } ?: "制限なし"}")
          TextButton(onClick = { selected = pkg; input = (plan[pkg] ?: 30).toString() }) { Text("翌日以降の設定") }
         }

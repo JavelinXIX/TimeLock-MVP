@@ -13,6 +13,7 @@ internal class UsageAccumulator(private val start: Long) {
  fun pause(pkg: String, id: String, at: Long) {
   active[pkg]?.let { it.remove(id); if (it.isEmpty()) close(pkg, at) }
  }
+ fun activePackages(): Set<String> = since.keys.toSet()
  fun stopAll(at: Long) { since.keys.toList().forEach { close(it, at) }; active.clear() }
  private fun close(pkg: String, at: Long) { since.remove(pkg)?.let { total[pkg] = (total[pkg] ?: 0L) + (at - maxOf(it, start)).coerceAtLeast(0L) } }
  fun result(now: Long): Map<String, Long> = total.toMutableMap().apply {

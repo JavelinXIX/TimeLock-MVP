@@ -8,9 +8,12 @@ import android.os.Process
 import java.time.LocalDate
 import java.time.ZoneId
 
+data class UsageSnapshot(val totals: Map<String, Long>, val activePackages: Set<String>)
+
 object Usage {
  fun allowed(c: Context): Boolean = c.getSystemService(AppOpsManager::class.java).checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), c.packageName) == AppOpsManager.MODE_ALLOWED
- fun totals(c: Context): Map<String, Long> {
+ fun totals(c: Context): Map<String, Long> = snapshot(c).totals
+ fun snapshot(c: Context): UsageSnapshot {
   val now = System.currentTimeMillis()
   val start = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
   val manager = c.getSystemService(UsageStatsManager::class.java)
@@ -31,6 +34,6 @@ object Usage {
     UsageEvents.Event.ACTIVITY_PAUSED, UsageEvents.Event.ACTIVITY_STOPPED -> accumulator.pause(pkg, id, event.timeStamp)
    }
   }
-  return accumulator.result(now)
+  return UsageSnapshot(accumulator.result(now), accumulator.activePackages())
  }
 }
